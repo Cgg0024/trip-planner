@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trip Planner - 智能旅行规划师</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #4F46E5; --primary-hover: #4338CA; --secondary: #10B981;
+            --bg: #F8FAFC; --card-bg: #FFFFFF; --text-dark: #1E293B;
+            --text-medium: #64748B; --text-light: #94A3B8; --border: #E2E8F0;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+            --radius: 16px; --radius-sm: 12px;
+        }
+        body { font-family: 'Inter', 'PingFang SC', sans-serif; background: var(--bg); color: var(--text-dark); line-height: 1.6; min-height: 100vh; }
+        .hero { background: linear-gradient(135deg, var(--primary) 0%, #7C3AED 100%); padding: 80px 20px 100px; text-align: center; position: relative; overflow: hidden; }
+        .hero::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); opacity: 0.5; }
+        .hero-content { position: relative; z-index: 1; max-width: 800px; margin: 0 auto; }
+        .hero h1 { font-size: 3rem; font-weight: 700; color: white; margin-bottom: 16px; letter-spacing: -0.02em; }
+        .hero p { font-size: 1.25rem; color: rgba(255,255,255,0.9); margin-bottom: 40px; }
+        .form-card { background: var(--card-bg); border-radius: var(--radius); padding: 32px; box-shadow: var(--shadow-lg); max-width: 900px; margin: -60px auto 40px; position: relative; z-index: 2; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; margin-bottom: 24px; }
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
+        .form-group label { font-size: 0.875rem; font-weight: 600; color: var(--text-dark); }
+        .form-group input, .form-group select { padding: 14px 16px; border: 2px solid var(--border); border-radius: var(--radius-sm); font-size: 1rem; font-family: inherit; transition: all 0.2s; background: var(--card-bg); color: var(--text-dark); }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
+        .budget-display { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .budget-value { font-size: 1.25rem; font-weight: 700; color: var(--primary); }
+        .budget-slider { width: 100%; height: 8px; -webkit-appearance: none; background: var(--border); border-radius: 4px; outline: none; }
+        .budget-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; background: var(--primary); border-radius: 50%; cursor: pointer; box-shadow: 0 2px 6px rgba(79,70,229,0.4); }
+        .tags-group { margin-bottom: 24px; }
+        .tags-group label { display: block; font-size: 0.875rem; font-weight: 600; color: var(--text-dark); margin-bottom: 12px; }
+        .tags { display: flex; flex-wrap: wrap; gap: 10px; }
+        .tag { padding: 10px 18px; border: 2px solid var(--border); border-radius: 50px; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.2s; background: var(--card-bg); color: var(--text-medium); }
+        .tag:hover { border-color: var(--primary); color: var(--primary); }
+        .tag.active { background: var(--primary); border-color: var(--primary); color: white; }
+        .btn-generate { width: 100%; padding: 18px 32px; background: var(--primary); color: white; border: none; border-radius: var(--radius-sm); font-size: 1.125rem; font-weight: 600; font-family: inherit; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-generate:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+        .btn-generate:active { transform: scale(0.98); }
+        .btn-generate:disabled { background: var(--text-light); cursor: not-allowed; transform: none; }
+        .btn-generate .spinner { width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .results { max-width: 1200px; margin: 0 auto 60px; padding: 0 20px; display: none; }
+        .results.visible { display: block; }
+        .section-title { font-size: 1.5rem; font-weight: 700; color: var(--text-dark); margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+        .section-title .icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary), #7C3AED); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.25rem; }
+        .card { background: var(--card-bg); border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow); margin-bottom: 32px; transition: all 0.2s; }
+        .card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+        .overview-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; }
+        .overview-item { text-align: center; padding: 20px; background: var(--bg); border-radius: var(--radius-sm); }
+        .overview-item .label { font-size: 0.75rem; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+        .overview-item .value { font-size: 1.25rem; font-weight: 700; color: var(--text-dark); }
+        .overview-item .value.primary { color: var(--primary); }
+        .transport-table, .cost-table { width: 100%; border-collapse: collapse; }
+        .transport-table th, .transport-table td, .cost-table th, .cost-table td { padding: 16px; text-align: left; border-bottom: 1px solid var(--border); }
+        .transport-table th, .cost-table th { font-size: 0.75rem; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.05em; background: var(--bg); }
+        .transport-table td, .cost-table td { font-size: 0.9375rem; color: var(--text-dark); }
+        .transport-table tr:last-child td, .cost-table tr:last-child td { border-bottom: none; }
+        .transport-table .recommended { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: rgba(16,185,129,0.1); color: var(--secondary); border-radius: 50px; font-size: 0.75rem; font-weight: 600; }
+        .attractions-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
+        .attraction-card { background: var(--card-bg); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); transition: all 0.3s; }
+        .attraction-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
+        .attraction-card img { width: 100%; height: 180px; object-fit: cover; }
+        .attraction-content { padding: 20px; }
+        .attraction-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .attraction-name { font-size: 1.125rem; font-weight: 700; color: var(--text-dark); }
+        .attraction-type { padding: 4px 10px; background: rgba(79,70,229,0.1); color: var(--primary); border-radius: 50px; font-size: 0.75rem; font-weight: 600; }
+        .attraction-info { display: flex; gap: 16px; margin-bottom: 12px; font-size: 0.875rem; color: var(--text-medium); }
+        .attraction-info span { display: flex; align-items: center; gap: 4px; }
+        .attraction-desc { font-size: 0.875rem; color: var(--text-medium); line-height: 1.6; }
+        .cost-detail { font-size: 0.8125rem; color: var(--text-medium); }
+        .cost-total { font-weight: 700; color: var(--primary); font-size: 1.125rem; background: rgba(79,70,229,0.05); }
+        .timeline-day { margin-bottom: 32px; }
+        .timeline-day:last-child { margin-bottom: 0; }
+        .day-header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+        .day-badge { width: 48px; height: 48px; background: linear-gradient(135deg, var(--primary), #7C3AED); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1rem; font-weight: 700; }
+        .day-info h3 { font-size: 1.125rem; font-weight: 700; color: var(--text-dark); }
+        .day-info p { font-size: 0.875rem; color: var(--text-medium); }
+        .timeline-items { position: relative; padding-left: 32px; }
+        .timeline-items::before { content: ''; position: absolute; left: 7px; top: 8px; bottom: 8px; width: 2px; background: var(--border); }
+        .timeline-item { position: relative; padding: 16px 20px; background: var(--bg); border-radius: var(--radius-sm); margin-bottom: 12px; transition: all 0.2s; }
+        .timeline-item:last-child { margin-bottom: 0; }
+        .timeline-item:hover { background: rgba(79,70,229,0.05); }
+        .timeline-item::before { content: ''; position: absolute; left: -29px; top: 22px; width: 12px; height: 12px; background: var(--primary); border-radius: 50%; border: 3px solid var(--card-bg); }
+        .timeline-time { font-size: 0.75rem; font-weight: 600; color: var(--primary); margin-bottom: 4px; }
+        .timeline-title { font-size: 1rem; font-weight: 600; color: var(--text-dark); margin-bottom: 4px; }
+        .timeline-desc { font-size: 0.875rem; color: var(--text-medium); }
+        .tips-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .tip-item { display: flex; gap: 16px; padding: 20px; background: var(--bg); border-radius: var(--radius-sm); }
+        .tip-icon { width: 44px; height: 44px; background: linear-gradient(135deg, var(--primary), #7C3AED); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.25rem; flex-shrink: 0; }
+        .tip-content h4 { font-size: 1rem; font-weight: 600; color: var(--text-dark); margin-bottom: 6px; }
+        .tip-content p { font-size: 0.875rem; color: var(--text-medium); line-height: 1.5; }
+        footer { text-align: center; padding: 40px 20px; color: var(--text-light); font-size: 0.875rem; }
+        @media (max-width: 768px) {
+            .hero { padding: 60px 20px 80px; }
+            .hero h1 { font-size: 2rem; }
+            .hero p { font-size: 1rem; }
+            .form-card { margin: -40px 16px 32px; padding: 24px; }
+            .form-grid { grid-template-columns: 1fr; gap: 20px; }
+            .attractions-grid { grid-template-columns: 1fr; }
+            .transport-table { font-size: 0.875rem; }
+            .transport-table th, .transport-table td { padding: 12px 8px; }
+        }
+    </style>
+</head>
+<body>
+    <header class="hero">
+        <div class="hero-content">
+            <h1>Trip Planner</h1>
+            <p>智能旅行规划师 · 一键生成你的专属旅行攻略</p>
+        </div>
+    </header>
+    <div class="form-card">
+        <form id="tripForm">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="destination">目的地</label>
+                    <select id="destination" required><option value="">选择目的地</option><option value="beijing">北京</option><option value="shanghai">上海</option><option value="chengdu">成都</option><option value="lijiang">丽江</option><option value="sanya">三亚</option><option value="xiamen">厦门</option></select>
+                </div>
+                <div class="form-group"><label for="days">出行天数</label><input type="number" id="days" min="1" max="15" value="3" required></div>
+                <div class="form-group"><label for="people">出行人数</label><input type="number" id="people" min="1" max="10" value="2" required></div>
+            </div>
+            <div class="form-group">
+                <div class="budget-display"><label for="budget">人均预算</label><span class="budget-value" id="budgetValue">¥5,000</span></div>
+                <input type="range" id="budget" class="budget-slider" min="2000" max="20000" step="1000" value="5000">
+            </div>
+            <div class="tags-group"><label>出行偏好（可多选）</label>
+                <div class="tags">
+                    <span class="tag active" data-tag="nature">自然风光</span>
+                    <span class="tag active" data-tag="culture">历史文化</span>
+                    <span class="tag" data-tag="food">美食探店</span>
+                    <span class="tag" data-tag="leisure">休闲度假</span>
+                    <span class="tag" data-tag="family">亲子游</span>
+                </div>
+            </div>
+            <button type="submit" class="btn-generate" id="generateBtn"><span class="icon">✈️</span><span>生成旅行攻略</span></button>
+        </form>
+    </div>
+    <section class="results" id="results">
+        <div class="card"><h2 class="section-title"><span class="icon">🗺️</span>行程概览</h2><div class="overview-grid" id="overviewGrid"></div></div>
+        <div class="card"><h2 class="section-title"><span class="icon">🚄</span>交通方案</h2><table class="transport-table" id="transportTable"></table></div>
+        <div class="card"><h2 class="section-title"><span class="icon">📍</span>景点推荐</h2><div class="attractions-grid" id="attractionsGrid"></div></div>
+        <div class="card"><h2 class="section-title"><span class="icon">💰</span>费用明细</h2><table class="cost-table" id="costTable"></table></div>
+        <div class="card"><h2 class="section-title"><span class="icon">📅</span>时间轴行程</h2><div id="timelineContainer"></div></div>
+        <div class="card"><h2 class="section-title"><span class="icon">💡</span>实用贴士</h2><div class="tips-grid" id="tipsGrid"></div></div>
+    </section>
+    <footer><p>Trip Planner · 智能旅行规划师 · 祝你旅途愉快！</p></footer>
+    <script>
+const destinations={beijing:{name:'北京',bestSeason:'3月-5月、9月-11月',attractions:[{name:'故宫博物院',type:'历史文化',duration:'3-4小时',ticket:'¥60',highlight:'世界最大宫殿建筑群',image:'https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=600&q=80'},{name:'八达岭长城',type:'自然风光',duration:'3-5小时',ticket:'¥40',highlight:'最壮观的长城段落',image:'https://images.unsplash.com/photo-1508807526345-15e9b5f4eaff?w=600&q=80'},{name:'颐和园',type:'自然风光',duration:'2-3小时',ticket:'¥30',highlight:'中国古典园林之首',image:'https://images.unsplash.com/photo-1599571234909-29ed5d1321d6?w=600&q=80'},{name:'天坛公园',type:'历史文化',duration:'1-2小时',ticket:'¥34',highlight:'明清皇帝祭天圣地',image:'https://images.unsplash.com/photo-1590970592810-8e1e1a1e1e1e?w=600&q=80'},{name:'南锣鼓巷',type:'美食探店',duration:'2小时',ticket:'免费',highlight:'老北京胡同文化',image:'https://images.unsplash.com/photo-1580476262798-bddd9f4b7369?w=600&q=80'},{name:'鸟巢/水立方',type:'休闲度假',duration:'2小时',ticket:'外观免费',highlight:'奥运地标建筑',image:'https://images.unsplash.com/photo-1580739865447-1160a8b5d8b6?w=600&q=80'}],restaurants:[{name:'全聚德烤鸭',specialty:'北京烤鸭',priceRange:'¥150-300/人'},{name:'东来顺涮肉',specialty:'老北京铜锅涮肉',priceRange:'¥100-200/人'},{name:'护国寺小吃',specialty:'豆汁、焦圈',priceRange:'¥30-60/人'},{name:'簋街夜市',specialty:'小龙虾',priceRange:'¥80-150/人'}],tips:{weather:'年平均气温12°C',essentials:'身份证、舒适的步行鞋',avoid:'周一故宫闭馆，提前预约',save:'景区联票比单买便宜'}},shanghai:{name:'上海',bestSeason:'3月-5月、9月-11月',attractions:[{name:'外滩',type:'历史文化',duration:'1-2小时',ticket:'免费',highlight:'万国建筑博览',image:'https://images.unsplash.com/photo-1537531383496-f4749b8032cf?w=600&q=80'},{name:'东方明珠',type:'休闲度假',duration:'2-3小时',ticket:'¥199',highlight:'上海地标',image:'https://images.unsplash.com/photo-1567612529009-afe25813a308?w=600&q=80'},{name:'豫园/城隍庙',type:'历史文化',duration:'2-3小时',ticket:'¥40',highlight:'江南古典园林',image:'https://images.unsplash.com/photo-1570939274717-7eda259b50ed?w=600&q=80'},{name:'田子坊',type:'美食探店',duration:'2小时',ticket:'免费',highlight:'石库门弄堂',image:'https://images.unsplash.com/photo-1580974852861-c381510bc98a?w=600&q=80'},{name:'迪士尼乐园',type:'亲子游',duration:'全天',ticket:'¥475',highlight:'梦幻王国',image:'https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=600&q=80'},{name:'南京路步行街',type:'美食探店',duration:'2小时',ticket:'免费',highlight:'中华商业第一街',image:'https://images.unsplash.com/photo-1547934927-0bd8e2c5fb71?w=600&q=80'}],restaurants:[{name:'南翔馒头店',specialty:'蟹粉小笼',priceRange:'¥60-120/人'},{name:'上海老饭店',specialty:'本帮菜',priceRange:'¥100-200/人'},{name:'沈大成',specialty:'青团',priceRange:'¥30-50/人'},{name:'荣叔黄鱼面',specialty:'黄鱼面',priceRange:'¥80-150/人'}],tips:{weather:'亚热带季风气候',essentials:'充电宝、薄外套',avoid:'外滩观光隧道不推荐',save:'地铁一日票¥18'}},chengdu:{name:'成都',bestSeason:'3月-6月、9月-11月',attractions:[{name:'大熊猫基地',type:'亲子游',duration:'3-4小时',ticket:'¥55',highlight:'看萌萌哒大熊猫',image:'https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=600&q=80'},{name:'宽窄巷子',type:'美食探店',duration:'2小时',ticket:'免费',highlight:'老成都名片',image:'https://images.unsplash.com/photo-1600607686527-6fb886090705?w=600&q=80'},{name:'武侯祠',type:'历史文化',duration:'2-3小时',ticket:'¥50',highlight:'三国文化圣地',image:'https://images.unsplash.com/photo-1590970592810-8e1e1a1e1e1e?w=600&q=80'},{name:'都江堰',type:'自然风光',duration:'3-4小时',ticket:'¥90',highlight:'千年水利工程',image:'https://images.unsplash.com/photo-1590071089561-7a9c0fcce494?w=600&q=80'},{name:'青城山',type:'自然风光',duration:'4-5小时',ticket:'¥60',highlight:'道教名山',image:'https://images.unsplash.com/photo-1566194078645-8c6d3b8e81b7?w=600&q=80'},{name:'锦里古街',type:'美食探店',duration:'2小时',ticket:'免费',highlight:'夜景很美',image:'https://images.unsplash.com/photo-1600611878755-3359ev4692c5?w=600&q=80'}],restaurants:[{name:'玉林串串香',specialty:'串串火锅',priceRange:'¥60-100/人'},{name:'龙抄手',specialty:'红油抄手',priceRange:'¥30-50/人'},{name:'蜀大侠火锅',specialty:'牛油火锅',priceRange:'¥80-150/人'},{name:'降龙爪爪',specialty:'卤味鸡爪',priceRange:'¥30-50/人'}],tips:{weather:'气候温和湿润',essentials:'肠胃药、遮阳帽',avoid:'熊猫基地下午熊猫会睡觉',save:'使用天府通APP乘地铁有折扣'}},lijiang:{name:'丽江',bestSeason:'3月-5月、9月-11月',attractions:[{name:'丽江古城',type:'历史文化',duration:'3-4小时',ticket:'免费',highlight:'世界文化遗产',image:'https://images.unsplash.com/photo-1528181304800-259b08848526?w=600&q=80'},{name:'玉龙雪山',type:'自然风光',duration:'半天-全天',ticket:'¥130',highlight:'纳西族神山',image:'https://images.unsplash.com/photo-1509057199577-87b6d8b5a7c1?w=600&q=80'},{name:'蓝月谷',type:'自然风光',duration:'2小时',ticket:'包含在雪山',highlight:'小九寨沟',image:'https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=600&q=80'},{name:'束河古镇',type:'休闲度假',duration:'2-3小时',ticket:'¥40',highlight:'比古城更安静',image:'https://images.unsplash.com/photo-1523944339743-0fe06f079939?w=600&q=80'},{name:'拉市海',type:'自然风光',duration:'3-4小时',ticket:'免费',highlight:'茶马古道',image:'https://images.unsplash.com/photo-1505228395891-9a51e7e86bf6?w=600&q=80'},{name:'泸沽湖',type:'休闲度假',duration:'1-2天',ticket:'¥70',highlight:'女儿国',image:'https://images.unsplash.com/photo-1580667513081-1df8ee32e39b?w=600&q=80'}],restaurants:[{name:'腊排骨火锅',specialty:'纳西特色',priceRange:'¥60-100/人'},{name:'鸡豆凉粉',specialty:'街边小吃',priceRange:'¥10-20/人'},{name:'丽江粑粑',specialty:'纳西煎饼',priceRange:'¥10-15/人'},{name:'野生菌火锅',specialty:'云南菌菇',priceRange:'¥100-200/人'}],tips:{weather:'高原气候，早晚温差大',essentials:'防晒霜、厚外套',avoid:'古城内银饰店谨防被宰',save:'住在古城外围更便宜'}},sanya:{name:'三亚',bestSeason:'11月-次年4月',attractions:[{name:'亚龙湾',type:'休闲度假',duration:'半天',ticket:'免费',highlight:'天下第一湾',image:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=80'},{name:'蜈支洲岛',type:'自然风光',duration:'全天',ticket:'¥144',highlight:'中国的马尔代夫',image:'https://images.unsplash.com/photo-1559128010-7c1ad6e1b6a5?w=600&q=80'},{name:'南山文化旅游区',type:'历史文化',duration:'3-4小时',ticket:'¥121',highlight:'108米海上观音',image:'https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=600&q=80'},{name:'天涯海角',type:'自然风光',duration:'2-3小时',ticket:'¥81',highlight:'浪漫打卡地',image:'https://images.unsplash.com/photo-1473116763249-2faaef81ccda?w=600&q=80'},{name:'呀诺达雨林',type:'自然风光',duration:'4-5小时',ticket:'¥170',highlight:'热带雨林踏瀑',image:'https://images.unsplash.com/photo-1510101964480-5a6b2ddc6da4?w=600&q=80'},{name:'亚特兰蒂斯水世界',type:'亲子游',duration:'全天',ticket:'¥298',highlight:'大型水上乐园',image:'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=600&q=80'}],restaurants:[{name:'第一市场海鲜',specialty:'新鲜海鲜加工',priceRange:'¥100-200/人'},{name:'嗲嗲椰子鸡',specialty:'椰子鸡火锅',priceRange:'¥100-150/人'},{name:'后海村小吃',specialty:'清补凉',priceRange:'¥30-60/人'},{name:'火车头海鲜广场',specialty:'海鲜大餐',priceRange:'¥150-300/人'}],tips:{weather:'热带季风气候',essentials:'防晒霜SPF50+、泳衣',avoid:'路边拉客的不要理',save:'错峰出行价格低'}},xiamen:{name:'厦门',bestSeason:'3月-5月、9月-11月',attractions:[{name:'鼓浪屿',type:'历史文化',duration:'半天-全天',ticket:'¥35',highlight:'万国建筑博览',image:'https://images.unsplash.com/photo-1598887142487-3c854d51eabb?w=600&q=80'},{name:'厦门大学',type:'历史文化',duration:'2-3小时',ticket:'免费',highlight:'中国最美大学',image:'https://images.unsplash.com/photo-1586177899131-8001b8a33a56?w=600&q=80'},{name:'南普陀寺',type:'历史文化',duration:'1-2小时',ticket:'免费',highlight:'千年古刹',image:'https://images.unsplash.com/photo-1590054220733-a1b3e3b98e2c?w=600&q=80'},{name:'环岛路',type:'休闲度假',duration:'2-3小时',ticket:'免费',highlight:'最美海岸线',image:'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=600&q=80'},{name:'曾厝垵',type:'美食探店',duration:'2-3小时',ticket:'免费',highlight:'文艺渔村',image:'https://images.unsplash.com/photo-1565034157170-abe6e8e73e2b?w=600&q=80'},{name:'植物园',type:'自然风光',duration:'3-4小时',ticket:'¥30',highlight:'多肉区拍照圣地',image:'https://images.unsplash.com/photo-1583248369069-9d91f1640fe6?w=600&q=80'}],restaurants:[{name:'中山路步行街',specialty:'沙茶面、海蛎煎',priceRange:'¥40-80/人'},{name:'鼓浪屿龙头路',specialty:'张三丰奶茶',priceRange:'¥30-60/人'},{name:'曾厝垵美食',specialty:'土笋冻',priceRange:'¥40-80/人'},{name:'八市海鲜市场',specialty:'新鲜海鲜',priceRange:'¥100-200/人'}],tips:{weather:'亚热带季风气候',essentials:'防晒、驱蚊水',avoid:'鼓浪屿周末人多',save:'关注轮渡公众号订票'}}};
+const budgetInput=document.getElementById('budget'),budgetValue=document.getElementById('budgetValue'),tags=document.querySelectorAll('.tag'),form=document.getElementById('tripForm'),generateBtn=document.getElementById('generateBtn'),results=document.getElementById('results');
+budgetInput.addEventListener('input',e=>{const value=parseInt(e.target.value);budgetValue.textContent=`¥${value.toLocaleString()}`;});
+tags.forEach(tag=>{tag.addEventListener('click',()=>{tag.classList.toggle('active');});});
+form.addEventListener('submit',async e=>{e.preventDefault();const destination=document.getElementById('destination').value,days=parseInt(document.getElementById('days').value),people=parseInt(document.getElementById('people').value),budget=parseInt(budgetInput.value),selectedTags=Array.from(document.querySelectorAll('.tag.active')).map(t=>t.dataset.tag);if(!destination){alert('请选择目的地');return;}generateBtn.disabled=true;generateBtn.innerHTML='<span class="spinner"></span><span>生成中...</span>';await new Promise(resolve=>setTimeout(resolve,1500));generatePlan(destination,days,people,budget,selectedTags);results.classList.add('visible');results.scrollIntoView({behavior:'smooth',block:'start'});generateBtn.disabled=false;generateBtn.innerHTML='<span class="icon">✈️</span><span>生成旅行攻略</span>';});
+function generatePlan(destination,days,people,budget,selectedTags){const data=destinations[destination],budgetPerPerson=budget,startDate=new Date();startDate.setDate(startDate.getDate()+7);document.getElementById('overviewGrid').innerHTML=`<div class="overview-item"><div class="label">目的地</div><div class="value primary">${data.name}</div></div><div class="overview-item"><div class="label">行程天数</div><div class="value">${days}天${days-1}晚</div></div><div class="overview-item"><div class="label">出行人数</div><div class="value">${people}人</div></div><div class="overview-item"><div class="label">人均预算</div><div class="value">¥${budgetPerPerson.toLocaleString()}</div></div><div class="overview-item"><div class="label">最佳季节</div><div class="value">${data.bestSeason}</div></div>`;let transportCost=0;const tMap={beijing:900,shanghai:400,chengdu:1200,lijiang:1500,sanya:1800,xiamen:600};transportCost=tMap[destination]||600;const hotelCost=(days-1)*(budgetPerPerson>=10000?600:budgetPerPerson>=5000?350:300),mealCost=days*3*(budgetPerPerson>=10000?150:budgetPerPerson>=5000?100:80),ticketCost=data.attractions.slice(0,Math.min(6,days*2)).reduce((s,a)=>s+(parseInt(a.ticket.replace(/[^0-9]/g,''))||0),0),localTransport=days*80,otherCost=budgetPerPerson*0.05,totalCost=transportCost+hotelCost+mealCost+ticketCost+localTransport+otherCost;const transportOptions={beijing:[{type:'高铁',duration:'5-8h',price:'800-1000',recommended:true,reason:'性价比高'},{type:'飞机',duration:'2-3h',price:'1000-1500',recommended:false,reason:'最快到达'}],shanghai:[{type:'高铁',duration:'1-4h',price:'200-600',recommended:true,reason:'班次多'},{type:'飞机',duration:'1-2h',price:'500-1000',recommended:false,reason:'速度最快'}],chengdu:[{type:'高铁',duration:'8-14h',price:'600-900',recommended:false,reason:'时间较长'},{type:'飞机',duration:'2-3h',price:'800-1500',recommended:true,reason:'最快捷'}],lijiang:[{type:'飞机',duration:'2-4h',price:'1000-2000',recommended:true,reason:'主要交通'},{type:'火车+大巴',duration:'12-20h',price:'400-600',recommended:false,reason:'省钱但耗时'}],sanya:[{type:'飞机',duration:'2-5h',price:'1000-2500',recommended:true,reason:'主要交通方式'}],xiamen:[{type:'高铁',duration:'3-10h',price:'300-800',recommended:true,reason:'性价比高'},{type:'飞机',duration:'1.5-3h',price:'600-1200',recommended:false,reason:'速度快'}]};document.getElementById('transportTable').innerHTML=`<thead><tr><th>交通方式</th><th>耗时</th><th>费用/人</th><th>推荐理由</th></tr></thead><tbody>${transportOptions[destination].map(o=>`<tr><td><strong>${o.type}</strong></td><td>${o.duration}</td><td>¥${o.price}</td><td>${o.recommended?'<span class="recommended">推荐 ✓</span>':''}${o.reason}</td></tr>`).join('')}<tr><td><strong>市内交通</strong></td><td>-</td><td>¥50-100/天</td><td>地铁+公交+打车</td></tr></tbody>`;document.getElementById('attractionsGrid').innerHTML=data.attractions.slice(0,Math.min(6,days*2)).map(a=>`<div class="attraction-card"><img src="${a.image}" alt="${a.name}" loading="lazy"><div class="attraction-content"><div class="attraction-header"><span class="attraction-name">${a.name}</span><span class="attraction-type">${a.type}</span></div><div class="attraction-info"><span>⏱ ${a.duration}</span><span>🎫 ${a.ticket}</span></div><p class="attraction-desc">${a.highlight}</p></div></div>`).join('');document.getElementById('costTable').innerHTML=`<thead><tr><th>类别</th><th>明细</th><th>费用/人</th></tr></thead><tbody><tr><td><strong>大交通</strong></td><td class="cost-detail">往返</td><td>¥${transportCost}</td></tr><tr><td><strong>住宿</strong></td><td class="cost-detail">${days-1}晚</td><td>¥${hotelCost}</td></tr><tr><td><strong>餐饮</strong></td><td class="cost-detail">${days}天</td><td>¥${mealCost}</td></tr><tr><td><strong>门票</strong></td><td class="cost-detail">${Math.min(6,days*2)}个景点</td><td>¥${ticketCost}</td></tr><tr><td><strong>市内交通</strong></td><td class="cost-detail">地铁+打车</td><td>¥${localTransport}</td></tr><tr><td><strong>其他</strong></td><td class="cost-detail">保险/纪念品</td><td>¥${Math.round(otherCost)}</td></tr><tr class="cost-total"><td><strong>合计</strong></td><td class="cost-detail">人均</td><td><strong>¥${Math.round(totalCost)}</strong></td></tr><tr><td colspan="2"><strong>总费用（${people}人）</strong></td><td><strong style="color:var(--secondary)">¥${Math.round(totalCost*people).toLocaleString()}</strong></td></tr></tbody>`;let timelineHTML='';for(let d=0;d<days;d++){const curDate=new Date(startDate);curDate.setDate(curDate.getDate()+d);const dateStr=`${curDate.getMonth()+1}月${curDate.getDate()}日`,weekDay=['周日','周一','周二','周三','周四','周五','周六'][curDate.getDay()];let schedule=[];if(d===0){schedule=[{time:'08:00',title:'出发',desc:'建议提前2小时到达'},{time:'12:00',title:`抵达${data.name}`,desc:'接驳至酒店'},{time:'14:00-17:00',title:'办理入住+休息',desc:'酒店位于市中心'},{time:'18:00-20:00',title:'晚餐：'+data.restaurants[0].name,desc:data.restaurants[0].specialty},{time:'20:30',title:'自由活动',desc:'可选择夜景观赏'}];}else if(d===days-1){schedule=[{time:'08:00',title:'早餐',desc:'酒店早餐'},{time:'09:00-11:00',title:'退房+整理行李',desc:'前台寄存行李'},{time:'12:00-13:30',title:'午餐：'+data.restaurants[1].name,desc:data.restaurants[1].specialty},{time:'14:00-16:00',title:'最后打卡：'+data.attractions[d%data.attractions.length].name,desc:data.attractions[d%data.attractions.length].highlight},{time:'17:00',title:'前往机场/车站',desc:'建议提前2小时出发'}];}else{const mA=data.attractions[d%data.attractions.length],aA=data.attractions[(d+1)%data.attractions.length];schedule=[{time:'08:00',title:'早餐',desc:'品尝当地早餐'},{time:'09:00-12:00',title:'游览'+mA.name,desc:mA.highlight},{time:'12:00-13:30',title:'午餐：'+data.restaurants[d%data.restaurants.length].name,desc:data.restaurants[d%data.restaurants.length].specialty},{time:'14:00-17:00',title:'游览'+aA.name,desc:aA.highlight},{time:'18:00-20:00',title:'晚餐：'+data.restaurants[(d+1)%data.restaurants.length].name,desc:data.restaurants[(d+1)%data.restaurants.length].specialty},{time:'20:30',title:'自由活动/逛夜市',desc:'体验当地夜生活'}];}timelineHTML+=`<div class="timeline-day"><div class="day-header"><div class="day-badge">Day ${d+1}</div><div class="day-info"><h3>${dateStr} ${weekDay}</h3><p>${d===0?'抵达日':d===days-1?'返程日':'深度游览'}</p></div></div><div class="timeline-items">${schedule.map(i=>`<div class="timeline-item"><div class="timeline-time">${i.time}</div><div class="timeline-title">${i.title}</div><div class="timeline-desc">${i.desc}</div></div>`).join('')}</div></div>`;}document.getElementById('timelineContainer').innerHTML=timelineHTML;document.getElementById('tipsGrid').innerHTML=`${[{icon:'🌤️',title:'当地天气',p:data.tips.weather},{icon:'🎒',title:'必备物品',p:data.tips.essentials},{icon:'⚠️',title:'避坑提醒',p:data.tips.avoid},{icon:'💡',title:'省钱技巧',p:data.tips.save}].map(t=>`<div class="tip-item"><div class="tip-icon">${t.icon}</div><div class="tip-content"><h4>${t.title}</h4><p>${t.p}</p></div></div>`).join('')}`;}budgetValue.textContent=`¥${parseInt(budgetInput.value).toLocaleString()}`;
+    </script>
+</body>
+</html>
